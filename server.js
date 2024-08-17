@@ -12,7 +12,7 @@ const config = require("./config.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const database = require("./databasesql.js")(client);
+const database = require("./databasesql.js")(config);
 
 const i18n = require("./i18n.js");
 i18n.load();

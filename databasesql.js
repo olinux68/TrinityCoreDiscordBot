@@ -1,7 +1,5 @@
 let active = new Map();
-module.exports = (client) => {
-  const config = require("./config.js");
-  const Discord = require("discord.js");
+module.exports = (config) => {
   const MySQLEvents = require("@rodrigogs/mysql-events");
   var mysql = require("mysql2");
   const connection = mysql.createConnection({
