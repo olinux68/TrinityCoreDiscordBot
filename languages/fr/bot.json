@@ -1,0 +1,5 @@
+{
+  "Cmd.ping": "ping",
+  "desc.ping": "Répond avec pong.",
+  "pong": "Pong! Ça marche !"
+}

@@ -1,0 +1,5 @@
+{
+  "cmd.ping": "ping",
+  "desc.ping": "Replies with pong.",
+  "pong": "Pong! It works!"
+}

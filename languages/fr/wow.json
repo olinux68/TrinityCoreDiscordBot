@@ -1,0 +1,9 @@
+{
+  "cmd.create": "créer",
+  "desc.create": "Créer un compte sur le serveur WoW",
+  "modal.create.title": "Créer un compte",
+  "modal.create.username.placeholder": "XxPGMxX",
+  "modal.create.username.label": "Nom d'utilisateur",
+  "modal.create.password.placeholder": "M@t2P@sse",
+  "modal.create.password.label": "Mot de Passe"
+}
