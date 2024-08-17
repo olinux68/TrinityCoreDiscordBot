@@ -1,8 +1,9 @@
 {
-  "cmd.create": "create",
+  "cmd.create": "register",
   "desc.create": "Create an account on the WoW server",
   "cmd.online": "online",
   "desc.online": "Shows the list of online players (WIP)",
+
   "modal.create.title": "Create an account",
   "modal.create.username.placeholder": "XxPGMxX",
   "modal.create.username.label": "Username",

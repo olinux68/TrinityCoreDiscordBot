@@ -1,9 +1,19 @@
 {
-  "cmd.create": "créer",
+  "cmd.create": "s-enregistrer",
   "desc.create": "Créer un compte sur le serveur WoW",
+  "cmd.online": "en-ligne",
+  "desc.online": "Affiche la liste des joueurs connectés",
+
   "modal.create.title": "Créer un compte",
   "modal.create.username.placeholder": "XxPGMxX",
   "modal.create.username.label": "Nom d'utilisateur",
   "modal.create.password.placeholder": "M@t2P@sse",
-  "modal.create.password.label": "Mot de Passe"
+  "modal.create.password.label": "Mot de Passe",
+
+  "online.playing.discord": "**{{username}}** (<@{{discord}}>) est connecté depuis <t:{{since}}:R> (Joue actuellement en temps que **{{character}}**)\r\n",
+  "online.playing.regular": "**{{username}}** est connecté depuis <t:{{since}}:R> (Joue actuellement en temps que **{{character}}**)\r\n",
+  "online.connected.discord": "**{{username}}** (<@{{discord}}>) est connecté depuis <t:{{since}}:R>\r\n",
+  "online.connected.regular": "**{{username}}** est connecté depuis <t:{{since}}:R>\r\n",
+  "online.players.singular": "{{count}} joueur en ligne",
+  "online.players.plurial": "{{count}} joueurs en ligne"
 }
