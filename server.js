@@ -1,85 +1,126 @@
-const Discord = require("discord.js")
-const fs = require("fs")
-const config = require("./config.js")
-const client = new Discord.Client();
+const fs = require("node:fs");
+const path = require("node:path");
+const {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  ActivityType,
+} = require("discord.js");
 
-require('./databasesql.js')(client)
-const connection = require('./databasesql.js')
-module.exports = client
+const config = require("./config.js");
 
-client.commands = new Discord.Collection();
-client.aliases = new Discord.Collection()
-client.cooldowns = new Discord.Collection();
-client.DMonlies = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	client.commands.set(command.name, command);
+const connection = require("./databasesql.js")(client);
 
-	if (command.DMonly === true) {
-			client.DMonlies.set(command.name, command)
-	}
+module.exports = client;
+
+client.commands = new Collection();
+client.interactions = {
+  modals: {},
+};
+
+// Loading commands
+try {
+  const foldersPath = path.join(__dirname, "commands");
+  const commandFolders = fs.readdirSync(foldersPath);
+
+  for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs
+      .readdirSync(commandsPath)
+      .filter((file) => file.endsWith(".js"));
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = require(filePath);
+      if ("data" in command && "execute" in command) {
+        client.commands.set(command.data.name, command);
+      } else {
+        console.log(
+          `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        );
+      }
+    }
+  }
+} catch (error) {
+  console.error("Error while loading commands", error);
 }
 
+// Loading modals
+try {
+  const foldersPath = path.join(__dirname, "interactions", "modals");
+  const modalsFolders = fs.readdirSync(foldersPath);
+
+  for (const file of modalsFolders) {
+    const filePath = path.join(foldersPath, file);
+    const modal = require(filePath);
+    if ("customId" in modal && "execute" in modal) {
+      client.interactions.modals[modal.customId] = modal;
+    } else {
+      console.log(
+        `[WARNING] The modal at ${filePath} is missing a required "customId" or "execute" property.`
+      );
+    }
+  }
+} catch (error) {
+  console.error("Error while loading modals", error);
+}
 
 // Startup
-client.on('ready', () => {
-    console.log("----------")
-	console.log(`Logged in as ${client.user.tag}!`);
-    console.log("----------")
-	client.user.setActivity(config.statusMessage, { type: 'PLAYING' });
-	setInterval(() => {
-		client.user.setActivity(config.statusMessage, { type: 'PLAYING' });
-	  }, 360000);
+client.once(Events.ClientReady, (readyClient) => {
+  console.log("----------");
+  console.log(`Logged in as ${readyClient.user.tag}`);
+  console.log("----------");
+  client.user.setActivity(config.statusMessage, {
+    type: ActivityType.Playing,
+  });
+  setInterval(() => {
+    client.user.setActivity(config.statusMessage, {
+      type: ActivityType.Playing,
+    });
+  }, 360000);
 });
 
-// Command Handler
+// Interaction Handler
 
-client.on('message', async message => {
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (interaction.isChatInputCommand()) {
+    const command = interaction.client.commands.get(interaction.commandName);
 
-	if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`
+      );
+      return;
+    }
 
-	const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-	const command = args.shift().toLowerCase();
-	const { DMonlies } = client;
-
-	const DMonlyCommand = DMonlies.get(command);
-
-	if(message.guild !== null && DMonlyCommand) return message.reply("This is a DM only command.")
-	if(!client.commands.has(command)) return;
-
-	const { cooldowns } = client;
-
-		if (!cooldowns.has(command.name)) {
-			cooldowns.set(command.name, new Discord.Collection());
-		}
-
-		const now = Date.now();
-		const timestamps = cooldowns.get(command.name);
-		const cooldownAmount = (command.cooldown || 3) * 1000;
-
-		if (timestamps.has(message.author.id)) {
-			const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-			if (now < expirationTime) {
-				const timeLeft = (expirationTime - now) / 1000;
-				return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before using this command again.`);
-			}
-		}
-
-	try {
-		if(client.commands.has(command)) client.commands.get(command).execute(message, args)
-
-		timestamps.set(message.author.id, now);
-		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);	
-
-	} catch (error) {
-		console.error(error);
-		message.reply('There was an error trying to execute that command!');
-	}
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      }
+    }
+  } else if (interaction.isModalSubmit()) {
+    if (client.interactions.modals[interaction.customId]) {
+      client.interactions.modals[interaction.customId].execute(interaction);
+    } else {
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        ephemeral: true,
+      });
+    }
+  }
 });
 
-
-
-client.login(config.token)
+client.login(config.token);
