@@ -11,8 +11,6 @@ module.exports = (client) => {
     database: "auth",
   });
 
-  module.exports = connection;
-
   connection.connect(function (err) {
     if (err) {
       console.error(`Error connecting: ${err.stack}`);
@@ -31,4 +29,6 @@ module.exports = (client) => {
 
   instance.on(MySQLEvents.EVENTS.CONNECTION_ERROR, console.error);
   instance.on(MySQLEvents.EVENTS.ZONGJI_ERROR, console.error);
+
+  return connection;
 };
