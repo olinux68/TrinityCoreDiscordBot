@@ -7,127 +7,91 @@ module.exports = function (api) {
     customId,
     async execute(interaction) {
       const username = interaction.fields.getTextInputValue("wow_username");
+      const usernameValid = api.regex.username(username);
       const password = interaction.fields.getTextInputValue("wow_password");
+      const passwordValid = api.regex.password(password);
+      const passwordComplexity = api.regex.passwordComplexity(password);
 
-      api.database.query("USE auth");
-      api.database.query(
-        "select COUNT(username) from account where reg_mail = ?",
-        [interaction.user.id],
-        (error, results, fields) => {
-          if (error)
-            return interaction.reply({
-              content: "An error occured.",
-              ephemeral: true,
-            });
-
-          if (Object.values(results[0])[0] == 0) {
-            try {
-              api.soap
-                .Soap(`account create ${username} ${password}`)
-                .then((result) => {
-                  console.log(result);
-                  if (result.faultString)
-                    return interaction.reply({
-                      content: "Username already exists.",
-                      ephemeral: true,
-                    });
-                  else
-                    api.database.query(
-                      `UPDATE account set reg_mail = '${interaction.user.id}' WHERE username = '${username}'`
-                    );
-
-                  const embed = new EmbedBuilder()
-                    .setColor(api.config.color)
-                    .setTitle("Account Created")
-                    .setDescription("Take a look at your account info below:")
-                    .addFields([
-                      {
-                        name: "Username",
-                        value: username,
-                        inline: true,
-                      },
-                      {
-                        name: "Password",
-                        value: password,
-                        inline: true,
-                      },
-                    ])
-                    .setTimestamp()
-                    .setFooter({
-                      text: "Create command",
-                      iconURL: api.client.user.displayAvatarURL(),
-                    });
-                  interaction.reply({ ephemeral: true, embeds: [embed] });
-                });
-            } catch (error) {
-              console.log(error);
+      if (usernameValid && passwordValid && passwordComplexity) {
+        api.database.query("USE auth");
+        api.database.query(
+          "select COUNT(username) from account where reg_mail = ?",
+          [interaction.user.id],
+          (error, results, fields) => {
+            if (error)
               return interaction.reply({
                 content: "An error occured.",
                 ephemeral: true,
               });
+
+            if (Object.values(results[0])[0] == 0) {
+              try {
+                api.soap
+                  .Soap(`account create ${username} ${password}`)
+                  .then((result) => {
+                    console.log(result);
+                    if (result.faultString)
+                      return interaction.reply({
+                        content: "Username already exists.",
+                        ephemeral: true,
+                      });
+                    else
+                      api.database.query(
+                        `UPDATE account set reg_mail = '${interaction.user.id}' WHERE username = ?`,
+                        [username]
+                      );
+
+                    const embed = new EmbedBuilder()
+                      .setColor(api.config.color)
+                      .setTitle("Account Created")
+                      .setDescription(
+                        "Download [the client here](https://drive.proton.me/urls/9YA89NY4B4#InyQI8wE4dMC)\r\n Take a look at your account info below:"
+                      )
+                      .addFields([
+                        {
+                          name: "Username",
+                          value: username,
+                          inline: true,
+                        },
+                        {
+                          name: "Password",
+                          value: password,
+                          inline: true,
+                        },
+                      ])
+                      .setTimestamp()
+                      .setFooter({
+                        text: "Create command",
+                        iconURL: api.client.user.displayAvatarURL(),
+                      });
+                    interaction.reply({ ephemeral: true, embeds: [embed] });
+                  });
+              } catch (error) {
+                console.log(error);
+                return interaction.reply({
+                  content: "An error occured.",
+                  ephemeral: true,
+                });
+              }
+            } else {
+              return interaction.reply({
+                content: "You already have an account.",
+                ephemeral: true,
+              });
             }
-          } else {
-            return interaction.reply({
-              content: "You already have an account.",
-              ephemeral: true,
-            });
           }
-        }
-      );
-      // const connection = mysql.createConnection({
-      //   host: config.databaseHost,
-      //   user: config.databaseUser,
-      //   password: config.databasePassword,
-      //   database: "auth",
-      // });
-
-      // console.log("Attempting to connect to the database");
-
-      // connection.connect((err) => {
-      //   if (err) {
-      //     console.error("Error connecting to the database:", err);
-      //     return interaction.reply({
-      //       content: "Error connecting to the database.",
-      //       ephemeral: true,
-      //     });
-      //   }
-
-      //   console.log("Connected to the database");
-
-      //   // Requête SQL pour insérer les données
-      //   const query = "INSERT INTO account (username, password) VALUES (?, ?)";
-
-      //   connection.query(query, [username, password], (err, results) => {
-      //     if (err) {
-      //       console.error("Error executing the query:", err);
-      //       connection.end();
-      //       return interaction.reply({
-      //         content: "Error executing the query.",
-      //         ephemeral: true,
-      //       });
-      //     }
-
-      //     console.log("Query executed successfully");
-      //     console.log("Results:", results);
-
-      //     // Confirmation à l'utilisateur
-      //     const embed = new EmbedBuilder()
-      //       .setTitle("Account Created")
-      //       .setDescription(`Account for ${username} created successfully!`)
-      //       .setColor("#00FF00");
-
-      //     interaction.reply({ embeds: [embed] });
-
-      //     // Fermeture de la connexion
-      //     connection.end((err) => {
-      //       if (err) {
-      //         console.error("Error closing the database connection:", err);
-      //       } else {
-      //         console.log("Database connection closed");
-      //       }
-      //     });
-      //   });
-      // });
+        );
+      } else if(!usernameValid) {
+        return interaction.reply({
+          content: "Your username is not valid, it must only contain alphanumerical.",
+          ephemeral: true,
+        });
+      } else if(!passwordValid || !passwordComplexity) {
+        return interaction.reply({
+          content: "Your password is not valid, it must not contain spaces, single or double quotes.\r\nIt must be at least 8 characters long, a lowercase, an uppercase letter and at least one digit.",
+          ephemeral: true,
+        });
+      }
     },
   };
 };

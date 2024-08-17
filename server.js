@@ -25,6 +25,17 @@ const api = {
   database,
   i18n,
   soap,
+  regex: {
+    username: function (text) {
+      return /^[a-zA-Z0-9]+$/gm.test(text); // username is only aphanumerical
+    },
+    password: function (text) {
+      return /^[^\s'"]+$/g.test(text); // password does not include space, ' or "
+    },
+    passwordComplexity: function (text) {
+      return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(text); //minimum 1 lower case, 1 uppercase, 1 digit, 8 characters long
+    },
+  },
 };
 
 module.exports = client;
