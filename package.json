@@ -7,7 +7,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js"
   },
-  "author": "CallMeXander#9145",
+  "author": "ZaptoInc",
   "license": "ISC",
   "dependencies": {
     "@rodrigogs/mysql-events": "^0.6.0",
