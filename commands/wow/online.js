@@ -19,53 +19,53 @@ module.exports = function (api) {
           api.database.query("use characters;");
           api.database.query(
             "select name, account from characters where online = 1;",
-            (error2, characters, fields2) => {
+            async (error2, characters, fields2) => {
               accounts.forEach((account) => {
                 if (!onlinePlayers[account.id]) {
                   onlinePlayers[account.id] = {};
                 }
                 onlinePlayers[account.id].account = account;
               });
-              characters.forEach((character) => {
+              characters.forEach(async (character) => {
                 if (!onlinePlayers[character.account]) {
                   onlinePlayers[character.account] = {};
                 }
                 onlinePlayers[character.account].character = character;
               });
+
+              let embed = new EmbedBuilder();
+              embed.setTitle("Player list");
+              let tempDesc = "";
+              Object.values(onlinePlayers).forEach(async (player) => {
+                if (tempDesc > 4000) {
+                  embed.setDescription(tempDesc);
+                  tempDesc = "";
+                  if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({ embeds: [embed] });
+                  } else {
+                    await interaction.reply({ embeds: [embed] });
+                  }
+                }
+                tempDesc += `${
+                  player.character.name
+                } is connected since <t:${Math.floor(
+                  new Date(player.account.last_login).getTime() / 1000
+                )}:R> \r\n`;
+                console.log(tempDesc);
+              });
+              console.log(tempDesc);
+              embed.setDescription(tempDesc);
+              tempDesc = "";
+
+              if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ embeds: [embed] });
+              } else {
+                await interaction.reply({ embeds: [embed] });
+              }
             }
           );
         }
       );
-
-      let embed = new EmbedBuilder();
-      embed.setTitle("Player list");
-      let tempDesc = "";
-      Object.values(onlinePlayers).forEach(async (player) => {
-        if (tempDesc > 4000) {
-          embed.setDescription(tempDesc);
-          tempDesc = "";
-          if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ embeds: [embed] });
-          } else {
-            await interaction.reply({ embeds: [embed] });
-          }
-        }
-        tempDesc += `${
-          player.character.name
-        } is connected since <t:${Math.floor(
-          new Date(player.account.last_login).getTime() / 1000
-        )}:R> \r\n`;
-        console.log(tempDesc);
-      });
-      console.log(tempDesc);
-      embed.setDescription(tempDesc);
-      tempDesc = "";
-
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ embeds: [embed] });
-      } else {
-        await interaction.reply({ embeds: [embed] });
-      }
     },
   };
 };
