@@ -57,6 +57,9 @@ module.exports = function (api) {
         )}:R>`;
       });
 
+      embed.setDescription(tempDesc);
+      tempDesc = "";
+
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ embeds: [embed] });
       } else {
