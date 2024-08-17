@@ -1,5 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const mysql = require("mysql2");
+const { EmbedBuilder } = require("discord.js");
 
 const customId = "wow_create";
 
@@ -10,6 +9,71 @@ module.exports = function (api) {
       const username = interaction.fields.getTextInputValue("wow_username");
       const password = interaction.fields.getTextInputValue("wow_password");
 
+      api.database.query("USE auth");
+      connection.query(
+        "select COUNT(username) from account where reg_mail = ?",
+        [interaction.user.id],
+        (error, results, fields) => {
+          if (error)
+            return interaction.reply({
+              content: "An error occured.",
+              ephemeral: true,
+            });
+
+          if (Object.values(results[0])[0] == 0) {
+            try {
+              api.soap
+                .Soap(`account create ${username} ${password}`)
+                .then((result) => {
+                  console.log(result);
+                  if (result.faultString)
+                    return interaction.reply({
+                      content: "Username already exists.",
+                      ephemeral: true,
+                    });
+                  else
+                    connection.query(
+                      `UPDATE account set reg_mail = '${interaction.user.id}' WHERE username = '${username}'`
+                    );
+
+                  const embed = new EmbedBuilder()
+                    .setColor(api.config.color)
+                    .setTitle("Account Created")
+                    .setDescription("Take a look at your account info below:")
+                    .addFields([
+                      {
+                        name: "Username",
+                        value: username,
+                        inline: true,
+                      },
+                      {
+                        name: "Password",
+                        value: password,
+                        inline: true,
+                      },
+                    ])
+                    .setTimestamp()
+                    .setFooter(
+                      "Create command",
+                      api.client.user.displayAvatarURL()
+                    );
+                  interaction.reply({ ephemeral: true, embeds: [embed] });
+                });
+            } catch (error) {
+              console.log(error);
+              return interaction.reply({
+                content: "An error occured.",
+                ephemeral: true,
+              });
+            }
+          } else {
+            return interaction.reply({
+              content: "You already have an account.",
+              ephemeral: true,
+            });
+          }
+        }
+      );
       // const connection = mysql.createConnection({
       //   host: config.databaseHost,
       //   user: config.databaseUser,
