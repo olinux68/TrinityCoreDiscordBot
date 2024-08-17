@@ -14,7 +14,7 @@ module.exports = function (api) {
       let onlinePlayers = 0;
       api.database.query("USE characters");
       api.database.query(
-        "select name from characters where online = 1",
+        "select name, joindate, last_login, locale, reg_mail from characters where online = 1",
         (error, results1, fields) => {
           console.log(results1);
         }
