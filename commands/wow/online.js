@@ -18,7 +18,7 @@ module.exports = function (api) {
         (error1, accounts, fields1) => {
           api.database.query("use characters;");
           api.database.query(
-            "select name, account from characters where online = 1;",
+            "select name, account, map from characters where online = 1;",
             async (error2, characters, fields2) => {
               accounts.forEach((account) => {
                 if (!onlinePlayers[account.id]) {
@@ -34,6 +34,8 @@ module.exports = function (api) {
               });
 
               const onlinePlayersCount = Object.keys(onlinePlayers).length;
+
+              console.log(onlinePlayers, onlinePlayersCount);
 
               let embed = new EmbedBuilder();
               embed.setTitle(
@@ -57,15 +59,17 @@ module.exports = function (api) {
                   player.account.reg_mail
                 );
                 if (player.character) {
-                  tempDesc += `**${player.character.name}** ${
+                  tempDesc += `**${player.account.username}** ${
                     isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
                   }is connected since <t:${Math.floor(
                     new Date(player.account.last_login).getTime() / 1000
-                  )}:R> \r\n`;
+                  )}:R> (Currently playing as ${player.character.name})\r\n`;
                 } else {
                   tempDesc += `**${player.account.username}** ${
                     isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
-                  }is connecting`;
+                  }is connected since <t:${Math.floor(
+                    new Date(player.account.last_login).getTime() / 1000
+                  )}:R>\r\n`;
                 }
               });
               embed.setDescription(tempDesc);
