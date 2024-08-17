@@ -13,16 +13,18 @@ module.exports = function (api) {
       let counter = 0;
       let onlinePlayers = 0;
       api.database.query("use auth;");
-      let accounts = await api.database.query(
-        "select username, joindate, last_login, locale, reg_mail, online, id from account where online = 1;"
+      api.database.query(
+        "select username, joindate, last_login, locale, reg_mail, online, id from account where online = 1;",
+        (error1, accounts, fields1) => {
+          api.database.query("use characters;");
+          api.database.query(
+            "select name, account from characters where online = 1;",
+            (error2, characters, fields2) => {
+              console.log(accounts, characters);
+            }
+          );
+        }
       );
-
-      api.database.query("use characters;");
-      let characters = await api.database.query(
-        "select name, account from characters where online = 1;"
-      );
-
-      console.log(accounts, characters);
 
       let embed = new EmbedBuilder();
       embed.setDescription("testing");
