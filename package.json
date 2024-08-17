@@ -12,6 +12,7 @@
   "dependencies": {
     "@rodrigogs/mysql-events": "^0.6.0",
     "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
     "hex-to-binary": "^1.0.1",
     "http": "^0.0.1-security",
     "mysql": "^2.18.1",
