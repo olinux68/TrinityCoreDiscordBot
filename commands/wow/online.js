@@ -11,7 +11,7 @@ module.exports = function (api) {
       ),
     async execute(interaction) {
       let counter = 0;
-      let onlinePlayers = 0;
+      let onlinePlayers = {};
       api.database.query("use auth;");
       api.database.query(
         "select username, joindate, last_login, locale, reg_mail, online, id from account where online = 1;",
@@ -20,7 +20,19 @@ module.exports = function (api) {
           api.database.query(
             "select name, account from characters where online = 1;",
             (error2, characters, fields2) => {
-              console.log(accounts, characters);
+              accounts.forEach((account) => {
+                if (!onlinePlayers[account.id]) {
+                  onlinePlayers[account.id] = {};
+                }
+                onlinePlayers[account.id].account = account;
+              });
+              characters.forEach((character) => {
+                if (!onlinePlayers[character.account]) {
+                  onlinePlayers[character.account] = {};
+                }
+                onlinePlayers[character.account].character = character;
+              });
+              console.log(onlinePlayers);
             }
           );
         }
