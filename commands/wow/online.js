@@ -58,12 +58,14 @@ module.exports = function (api) {
                 );
                 if (player.character) {
                   tempDesc += `**${player.character.name}** ${
-                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>)` : ""
-                  } is connected since <t:${Math.floor(
+                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
+                  }is connected since <t:${Math.floor(
                     new Date(player.account.last_login).getTime() / 1000
                   )}:R> \r\n`;
                 } else {
-                  tempDesc += `**${player.account.username}** is connecting`;
+                  tempDesc += `**${player.account.username}** ${
+                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
+                  }is connecting`;
                 }
               });
               embed.setDescription(tempDesc);
