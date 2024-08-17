@@ -13,7 +13,7 @@ module.exports = function (api) {
       let counter = 0;
       let onlinePlayers = 0;
       api.database.query("USE characters");
-      connection.query(
+      api.database.query(
         "select name from characters where online = 1",
         (error, results1, fields) => {
           console.log(results1);
