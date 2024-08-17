@@ -53,10 +53,10 @@ module.exports = function (api) {
                       },
                     ])
                     .setTimestamp()
-                    .setFooter(
-                      "Create command",
-                      api.client.user.displayAvatarURL()
-                    );
+                    .setFooter({
+                      text: "Create command",
+                      iconURL: api.client.user.displayAvatarURL(),
+                    });
                   interaction.reply({ ephemeral: true, embeds: [embed] });
                 });
             } catch (error) {
