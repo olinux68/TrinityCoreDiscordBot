@@ -54,9 +54,10 @@ module.exports = function (api) {
           player.character.name
         } is connected since <t:${Math.floor(
           new Date(player.account.last_login).getTime() / 1000
-        )}:R>`;
+        )}:R> \r\n`;
+        console.log(tempDesc);
       });
-
+      console.log(tempDesc);
       embed.setDescription(tempDesc);
       tempDesc = "";
 
