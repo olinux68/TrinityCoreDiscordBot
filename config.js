@@ -12,4 +12,5 @@ module.exports = {
   soapPort: process.env.SOAP_PORT,
   soapHostname: process.env.SOAP_HOSTNAME,
   soapAuth: process.env.SOAP_AUTH,
+  locale: process.env.LOCALE,
 };

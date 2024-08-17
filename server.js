@@ -51,13 +51,21 @@ try {
         client.commands.set(command.data.name, command);
       } else {
         console.log(
-          `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+          i18n.translate(config.locale, "logs.cmd.missing.parts", {
+            logtype: i18n.translate(config.locale, "logs.warning"),
+            path: filePath,
+          })
         );
       }
     }
   }
 } catch (error) {
-  console.error("Error while loading commands", error);
+  console.error(
+    i18n.translate(config.locale, "logs.cmd.loading.error", {
+      logtype: i18n.translate(config.locale, "logs.error"),
+    }),
+    error
+  );
 }
 
 // Loading modals
@@ -72,18 +80,31 @@ try {
       client.interactions.modals[modal.customId] = modal;
     } else {
       console.log(
-        `[WARNING] The modal at ${filePath} is missing a required "customId" or "execute" property.`
+        i18n.translate(config.locale, "logs.cmd.missing.parts", {
+          logtype: i18n.translate(config.locale, "logs.warning"),
+          path: filePath,
+        })
       );
     }
   }
 } catch (error) {
-  console.error("Error while loading modals", error);
+  console.error(
+    i18n.translate(config.locale, "logs.modal.loading.error", {
+      logtype: i18n.translate(config.locale, "logs.error"),
+    }),
+    error
+  );
 }
 
 // Startup
 client.once(Events.ClientReady, (readyClient) => {
   console.log("----------");
-  console.log(`Logged in as ${readyClient.user.tag}`);
+  console.log(
+    i18n.translate(config.locale, "logs.bot.loggedin", {
+      logtype: i18n.translate(config.locale, "logs.info"),
+      username: readyClient.user.tag,
+    })
+  );
   console.log("----------");
   client.user.setActivity(config.statusMessage, {
     type: ActivityType.Playing,

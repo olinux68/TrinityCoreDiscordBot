@@ -1,0 +1,11 @@
+{
+  "info": "[INFO]",
+  "warning": "[WARNING]",
+  "error": "[ERROR]",
+  "cmd.missing.parts": "{{logtype}} The command at {{path}} is missing a required \"data\" or \"execute\" property.",
+  "cmd.loading.error": "{{logtype}} Error while loading commands",
+  "modal.missing.parts": "{{logtype}} The modal at {{path}} is missing a required \"customId\" or \"execute\" property.",
+  "modal.loading.error": "{{logtype}} Error while loading modals",
+
+  "bot.loggedin": "{{logtype}} Logged in as {{username}}"
+}
