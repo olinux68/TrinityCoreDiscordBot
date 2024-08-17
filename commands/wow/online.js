@@ -37,18 +37,19 @@ module.exports = function (api) {
 
               console.log(onlinePlayers, onlinePlayersCount);
 
-              let embed = new EmbedBuilder();
-              embed.setTitle(
-                api.i18n.translate(
-                  interaction.locale,
-                  `wow.online.players.${
-                    onlinePlayersCount > 1 ? "plurial" : "singular"
-                  }`,
-                  {
-                    count: onlinePlayersCount,
-                  }
+              let embed = new EmbedBuilder()
+                .setTitle(
+                  api.i18n.translate(
+                    interaction.locale,
+                    `wow.online.players.${
+                      onlinePlayersCount > 1 ? "plurial" : "singular"
+                    }`,
+                    {
+                      count: onlinePlayersCount,
+                    }
+                  )
                 )
-              );
+                .setColor(api.config.color);
               let tempDesc = "";
               Object.values(onlinePlayers).forEach(async (player) => {
                 if (tempDesc > 4000) {
