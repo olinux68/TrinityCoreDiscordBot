@@ -12,7 +12,20 @@ const config = require("./config.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const connection = require("./databasesql.js")(client);
+const database = require("./databasesql.js")(client);
+
+const i18n = require("./i18n.js");
+i18n.load();
+
+const soap = require("./soap.js");
+
+const api = {
+  config,
+  client,
+  database,
+  i18n,
+  soap,
+};
 
 module.exports = client;
 
@@ -33,7 +46,7 @@ try {
       .filter((file) => file.endsWith(".js"));
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
-      const command = require(filePath);
+      const command = require(filePath)(api);
       if ("data" in command && "execute" in command) {
         client.commands.set(command.data.name, command);
       } else {
@@ -54,7 +67,7 @@ try {
 
   for (const file of modalsFolders) {
     const filePath = path.join(foldersPath, file);
-    const modal = require(filePath);
+    const modal = require(filePath)(api);
     if ("customId" in modal && "execute" in modal) {
       client.interactions.modals[modal.customId] = modal;
     } else {
