@@ -33,9 +33,13 @@ module.exports = function (api) {
                 onlinePlayers[character.account].character = character;
               });
 
+              const onlinePlayersCount = Object.keys(onlinePlayers).length;
+
               let embed = new EmbedBuilder();
               embed.setTitle(
-                `${Object.keys(onlinePlayers).length} players online`
+                `${onlinePlayersCount} player${
+                  onlinePlayersCount > 1 ? "s" : ""
+                } online`
               );
               let tempDesc = "";
               Object.values(onlinePlayers).forEach(async (player) => {
@@ -52,15 +56,16 @@ module.exports = function (api) {
                 let isLinkedToDiscord = /^\d{17,19}$/.test(
                   player.account.reg_mail
                 );
-
-                tempDesc += `**${player.character.name}** ${
-                  isLinkedToDiscord ? `(<@${player.account.reg_mail}>)` : ""
-                } is connected since <t:${Math.floor(
-                  new Date(player.account.last_login).getTime() / 1000
-                )}:R> \r\n`;
-                console.log(tempDesc);
+                if (player.character) {
+                  tempDesc += `**${player.character.name}** ${
+                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>)` : ""
+                  } is connected since <t:${Math.floor(
+                    new Date(player.account.last_login).getTime() / 1000
+                  )}:R> \r\n`;
+                } else {
+                  tempDesc += `**${player.account.username}** is connecting`;
+                }
               });
-              console.log(tempDesc);
               embed.setDescription(tempDesc);
               tempDesc = "";
 
