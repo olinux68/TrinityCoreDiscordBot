@@ -32,15 +32,36 @@ module.exports = function (api) {
                 }
                 onlinePlayers[character.account].character = character;
               });
-              console.log(onlinePlayers);
             }
           );
         }
       );
 
       let embed = new EmbedBuilder();
-      embed.setDescription("testing");
-      await interaction.reply({ embeds: [embed] });
+      embed.setTitle("Player list");
+      let tempDesc = "";
+      Object.values(onlinePlayers).forEach(async (player) => {
+        if (tempDesc > 4000) {
+          embed.setDescription(tempDesc);
+          tempDesc = "";
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ embeds: [embed] });
+          } else {
+            await interaction.reply({ embeds: [embed] });
+          }
+        }
+        tempDesc += `${
+          player.character.name
+        } is connected since <t:${Math.floor(
+          new Date(player.account.last_login).getTime() / 1000
+        )}:R>`;
+      });
+
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ embeds: [embed] });
+      } else {
+        await interaction.reply({ embeds: [embed] });
+      }
     },
   };
 };
