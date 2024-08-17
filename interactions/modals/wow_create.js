@@ -10,7 +10,7 @@ module.exports = function (api) {
       const password = interaction.fields.getTextInputValue("wow_password");
 
       api.database.query("USE auth");
-      connection.query(
+      api.database.query(
         "select COUNT(username) from account where reg_mail = ?",
         [interaction.user.id],
         (error, results, fields) => {
@@ -32,7 +32,7 @@ module.exports = function (api) {
                       ephemeral: true,
                     });
                   else
-                    connection.query(
+                    api.database.query(
                       `UPDATE account set reg_mail = '${interaction.user.id}' WHERE username = '${username}'`
                     );
 
