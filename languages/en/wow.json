@@ -7,5 +7,12 @@
   "modal.create.username.placeholder": "XxPGMxX",
   "modal.create.username.label": "Username",
   "modal.create.password.placeholder": "S3cureP@ssword",
-  "modal.create.password.label": "Password"
+  "modal.create.password.label": "Password",
+
+  "online.playing.discord": "**{{username}}** (<@{{discord}}>) is connected since <t:{{since}}:R> (Currently playing as **{{character}}**)\r\n",
+  "online.playing.regular": "**{{username}}** is connected since <t:{{since}}:R> (Currently playing as **{{character}}**)\r\n",
+  "online.connected.discord": "**{{username}}** (<@{{discord}}>) is connected since <t:{{since}}:R>\r\n",
+  "online.connected.regular": "**{{username}}** is connected since <t:{{since}}:R>\r\n",
+  "online.players.singular": "{{count}} player online",
+  "online.players.plurial": "{{count}} players online"
 }

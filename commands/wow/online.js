@@ -39,9 +39,15 @@ module.exports = function (api) {
 
               let embed = new EmbedBuilder();
               embed.setTitle(
-                `${onlinePlayersCount} player${
-                  onlinePlayersCount > 1 ? "s" : ""
-                } online`
+                api.i18n.translate(
+                  interaction.locale,
+                  `wow.online.players.${
+                    onlinePlayersCount > 1 ? "plurial" : "singular"
+                  }`,
+                  {
+                    count: onlinePlayersCount,
+                  }
+                )
               );
               let tempDesc = "";
               Object.values(onlinePlayers).forEach(async (player) => {
@@ -59,17 +65,38 @@ module.exports = function (api) {
                   player.account.reg_mail
                 );
                 if (player.character) {
-                  tempDesc += `**${player.account.username}** ${
-                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
-                  }is connected since <t:${Math.floor(
-                    new Date(player.account.last_login).getTime() / 1000
-                  )}:R> (Currently playing as ${player.character.name})\r\n`;
+                  tempDesc += api.i18n.translate(
+                    interaction.locale,
+                    `wow.online.playing.${
+                      isLinkedToDiscord ? "discord" : "regular"
+                    }`,
+                    {
+                      username: player.account.username,
+                      character: player.character.name,
+                      discord: isLinkedToDiscord
+                        ? player.account.reg_mail
+                        : null,
+                      since: Math.floor(
+                        new Date(player.account.last_login).getTime() / 1000
+                      ),
+                    }
+                  );
                 } else {
-                  tempDesc += `**${player.account.username}** ${
-                    isLinkedToDiscord ? `(<@${player.account.reg_mail}>) ` : ""
-                  }is connected since <t:${Math.floor(
-                    new Date(player.account.last_login).getTime() / 1000
-                  )}:R>\r\n`;
+                  tempDesc += api.i18n.translate(
+                    interaction.locale,
+                    `wow.online.connected.${
+                      isLinkedToDiscord ? "discord" : "regular"
+                    }`,
+                    {
+                      username: player.account.username,
+                      discord: isLinkedToDiscord
+                        ? player.account.reg_mail
+                        : null,
+                      since: Math.floor(
+                        new Date(player.account.last_login).getTime() / 1000
+                      ),
+                    }
+                  );
                 }
               });
               embed.setDescription(tempDesc);
