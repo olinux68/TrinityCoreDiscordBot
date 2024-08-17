@@ -34,7 +34,9 @@ module.exports = function (api) {
               });
 
               let embed = new EmbedBuilder();
-              embed.setTitle("Player list");
+              embed.setTitle(
+                `${Object.keys(onlinePlayers).length} players online`
+              );
               let tempDesc = "";
               Object.values(onlinePlayers).forEach(async (player) => {
                 if (tempDesc > 4000) {
@@ -46,8 +48,13 @@ module.exports = function (api) {
                     await interaction.reply({ embeds: [embed] });
                   }
                 }
-                tempDesc += `${
-                  player.character.name
+
+                let isLinkedToDiscord = /^\d{17,19}$/.test(
+                  player.account.reg_mail
+                );
+
+                tempDesc += `**${player.character.name}** ${
+                  isLinkedToDiscord ? `(<@${player.account.reg_mail}>)` : ""
                 } is connected since <t:${Math.floor(
                   new Date(player.account.last_login).getTime() / 1000
                 )}:R> \r\n`;
