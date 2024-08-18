@@ -10,25 +10,39 @@ This way it verifies if the user is trying to use his own account created using 
 
 Requirements:
 
-    - NodeJS (Tested with v20.16.0)
-    - Modules (Use installation to install them)
-    - Discord Account with a bot account for bot token
+- NodeJS (Tested with v20.16.0)
+- Modules (Use installation to install them)
+- SOAP enabled on your TrinityCore server
+- a GM account to use with SOAP
+- Access to the database
+- Discord Account with a bot account for bot token
 
 Installation:
 
-    - Run "npm install", this will install all dependencies
-    - Rename "example.env" to ".env" and insert all your information: token, usernames, passwords, ...
-    - Make sure your TrinityCore server has enabled SOAP.
+    git clone https://github.com/ZaptoInc/TrinityCoreDiscordBot
+    cd trinitycorediscordbot
+    cp example.env .env
+    nano .env
+    npm install
+    npm run deploy
+
+- Change all the .env config for your needs
 
 Startup:
 
-    - Use a terminal
-    - run the commands :
-    - npm install
-    - npm run deploy
-    - npm run start
+    npm run start
+
+Updating:
+
+    git pull
+    npm install
+    npm install
+    npm run deploy
+
+- Please check example.env if new variables are needed to be filled
 
 Extra information:
 
-    - Special thanks to Village#9461 (no github) for funding the project.
-    - Original project by XanderDeLaet called AzerothCoreDiscordBot
+- Original project by XanderDeLaet called AzerothCoreDiscordBot
+- Special thanks to Village#9461 (no github) for funding the original project.
+- Thanks to Olinux68 for the idea + Trinity Core server to test and run the bot.
