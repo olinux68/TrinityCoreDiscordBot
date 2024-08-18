@@ -15,5 +15,6 @@
   "online.connected.discord": "**{{username}}** (<@{{discord}}>) is connected since <t:{{since}}:R>\r\n",
   "online.connected.regular": "**{{username}}** is connected since <t:{{since}}:R>\r\n",
   "online.players.singular": "{{count}} player online",
-  "online.players.plurial": "{{count}} players online"
+  "online.players.plurial": "{{count}} players online",
+  "online.empty": "Nobody is connected for now."
 }

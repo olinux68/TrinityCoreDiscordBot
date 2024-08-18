@@ -15,5 +15,6 @@
   "online.connected.discord": "**{{username}}** (<@{{discord}}>) est connecté depuis <t:{{since}}:R>\r\n",
   "online.connected.regular": "**{{username}}** est connecté depuis <t:{{since}}:R>\r\n",
   "online.players.singular": "{{count}} joueur en ligne",
-  "online.players.plurial": "{{count}} joueurs en ligne"
+  "online.players.plurial": "{{count}} joueurs en ligne",
+  "online.empty": "Personne n'est connecté pour l'instant."
 }

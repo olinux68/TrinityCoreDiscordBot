@@ -50,58 +50,65 @@ module.exports = function (api) {
                   )
                 )
                 .setColor(api.config.color);
-              let tempDesc = "";
-              Object.values(onlinePlayers).forEach(async (player) => {
-                if (tempDesc > 4000) {
-                  embed.setDescription(tempDesc);
-                  tempDesc = "";
-                  if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ embeds: [embed] });
-                  } else {
-                    await interaction.reply({ embeds: [embed] });
-                  }
-                }
 
-                let isLinkedToDiscord = /^\d{17,19}$/.test(
-                  player.account.reg_mail
+              if (onlinePlayersCount > 0) {
+                let tempDesc = "";
+                Object.values(onlinePlayers).forEach(async (player) => {
+                  if (tempDesc > 4000) {
+                    embed.setDescription(tempDesc);
+                    tempDesc = "";
+                    if (interaction.replied || interaction.deferred) {
+                      await interaction.followUp({ embeds: [embed] });
+                    } else {
+                      await interaction.reply({ embeds: [embed] });
+                    }
+                  }
+
+                  let isLinkedToDiscord = /^\d{17,19}$/.test(
+                    player.account.reg_mail
+                  );
+                  if (player.character) {
+                    tempDesc += api.i18n.translate(
+                      interaction.locale,
+                      `wow.online.playing.${
+                        isLinkedToDiscord ? "discord" : "regular"
+                      }`,
+                      {
+                        username: player.account.username,
+                        character: player.character.name,
+                        discord: isLinkedToDiscord
+                          ? player.account.reg_mail
+                          : null,
+                        since: Math.floor(
+                          new Date(player.account.last_login).getTime() / 1000
+                        ),
+                      }
+                    );
+                  } else {
+                    tempDesc += api.i18n.translate(
+                      interaction.locale,
+                      `wow.online.connected.${
+                        isLinkedToDiscord ? "discord" : "regular"
+                      }`,
+                      {
+                        username: player.account.username,
+                        discord: isLinkedToDiscord
+                          ? player.account.reg_mail
+                          : null,
+                        since: Math.floor(
+                          new Date(player.account.last_login).getTime() / 1000
+                        ),
+                      }
+                    );
+                  }
+                });
+                embed.setDescription(tempDesc);
+                tempDesc = "";
+              } else {
+                embed.setDescription(
+                  api.i18n.translate(interaction.locale, "wow.online.empty")
                 );
-                if (player.character) {
-                  tempDesc += api.i18n.translate(
-                    interaction.locale,
-                    `wow.online.playing.${
-                      isLinkedToDiscord ? "discord" : "regular"
-                    }`,
-                    {
-                      username: player.account.username,
-                      character: player.character.name,
-                      discord: isLinkedToDiscord
-                        ? player.account.reg_mail
-                        : null,
-                      since: Math.floor(
-                        new Date(player.account.last_login).getTime() / 1000
-                      ),
-                    }
-                  );
-                } else {
-                  tempDesc += api.i18n.translate(
-                    interaction.locale,
-                    `wow.online.connected.${
-                      isLinkedToDiscord ? "discord" : "regular"
-                    }`,
-                    {
-                      username: player.account.username,
-                      discord: isLinkedToDiscord
-                        ? player.account.reg_mail
-                        : null,
-                      since: Math.floor(
-                        new Date(player.account.last_login).getTime() / 1000
-                      ),
-                    }
-                  );
-                }
-              });
-              embed.setDescription(tempDesc);
-              tempDesc = "";
+              }
 
               if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ embeds: [embed] });
