@@ -1,4 +1,56 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
+const config = require('../config.js');
+const client = require('../server.js');
+const connection = require('../databasesql.js');
+const soap = require("../soap.js");
+
+module.exports = {
+  name: 'create',
+  description: 'Creates new game account.',
+  DMonly: true,
+  async execute(message, args) {
+    if (!args[0]) {
+      return message.reply(`You need to add a username after the command. \nUsage: **!create <username> <password>**`);
+    }
+    if (!args[1]) {
+      return message.reply(`You need to add a password after the username. \nUsage: **!create <username> <password>**`);
+    }
+
+    const username = args[0];
+    const password = args[1];
+
+    try {
+      await connection.query('USE acore_auth');
+      const [results] = await connection.query('SELECT COUNT(username) AS count FROM account WHERE reg_mail = ?', [message.author.id]);
+
+      if (results[0].count <= 25) {
+        const result = await soap.Soap(`account create ${username} ${password}`);
+
+        if (result.faultString) {
+          return message.reply("Username already exists.");
+        }
+
+        await connection.query('UPDATE account SET reg_mail = ? WHERE username = ?', [message.author.id, username]);
+
+        const embed = new Discord.MessageEmbed()
+          .setColor(config.color)
+          .setTitle('Account Created')
+          .setDescription('Take a look at your account info below:')
+          .addField('Username', username, true)
+          .addField('Password', password, true)
+          .setTimestamp()
+          .setFooter('Create command', client.user.displayAvatarURL());
+
+        message.channel.send(embed);
+      } else {
+        message.reply('You already have 25 accounts!');
+      }
+    } catch (error) {
+      console.error(error);
+      message.reply('An error occurred while creating the account.');
+    }
+  },
+};const Discord = require("discord.js")
 const config = require('../config.js')
 const client = require('../server.js')
 const crypto = require('crypto')

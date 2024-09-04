@@ -9,15 +9,15 @@ const {
 } = require("discord.js");
 
 const config = require("./config.js");
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
 const database = require("./databasesql.js")(config);
-
 const i18n = require("./i18n.js");
+const soap = require("./soap.js");
+
 i18n.load();
 
-const soap = require("./soap.js");
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+client.commands = new Collection();
+client.interactions = { modals: {} };
 
 const api = {
   config,
@@ -26,68 +26,55 @@ const api = {
   i18n,
   soap,
   regex: {
-    username: function (text) {
-      return /^[a-zA-Z0-9]+$/gm.test(text); // username is only aphanumerical
-    },
-    password: function (text) {
-      return /^[^\s'"]+$/g.test(text); // password does not include space, ' or "
-    },
-    passwordComplexity: function (text) {
-      return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(text); //minimum 1 lower case, 1 uppercase, 1 digit, 8 characters long
-    },
+    username: (text) => /^[a-zA-Z0-9]+$/gm.test(text),
+    password: (text) => /^[^\s'"]+$/g.test(text),
+    passwordComplexity: (text) => /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(text),
   },
 };
 
-module.exports = client;
-
-client.commands = new Collection();
-client.interactions = {
-  modals: {},
+const loadFiles = (folderPath, callback) => {
+  try {
+    const files = fs.readdirSync(folderPath);
+    files.forEach((file) => {
+      const filePath = path.join(folderPath, file);
+      callback(filePath);
+    });
+  } catch (error) {
+    console.error(
+      i18n.translate(config.locale, "logs.loading.error", {
+        logtype: i18n.translate(config.locale, "logs.error"),
+      }),
+      error
+    );
+  }
 };
 
-// Loading commands
-try {
+const loadCommands = () => {
   const foldersPath = path.join(__dirname, "commands");
-  const commandFolders = fs.readdirSync(foldersPath);
-
-  for (const folder of commandFolders) {
-    const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = fs
-      .readdirSync(commandsPath)
-      .filter((file) => file.endsWith(".js"));
-    for (const file of commandFiles) {
-      const filePath = path.join(commandsPath, file);
-      const command = require(filePath)(api);
-      if ("data" in command && "execute" in command) {
-        client.commands.set(command.data.name, command);
-      } else {
-        console.log(
-          i18n.translate(config.locale, "logs.cmd.missing.parts", {
-            logtype: i18n.translate(config.locale, "logs.warning"),
-            path: filePath,
-          })
-        );
+  loadFiles(foldersPath, (folderPath) => {
+    loadFiles(folderPath, (filePath) => {
+      if (filePath.endsWith(".js")) {
+        const command = require(filePath)(api);
+        if (command.data && command.execute) {
+          client.commands.set(command.data.name, command);
+        } else {
+          console.log(
+            i18n.translate(config.locale, "logs.cmd.missing.parts", {
+              logtype: i18n.translate(config.locale, "logs.warning"),
+              path: filePath,
+            })
+          );
+        }
       }
-    }
-  }
-} catch (error) {
-  console.error(
-    i18n.translate(config.locale, "logs.cmd.loading.error", {
-      logtype: i18n.translate(config.locale, "logs.error"),
-    }),
-    error
-  );
-}
+    });
+  });
+};
 
-// Loading modals
-try {
+const loadModals = () => {
   const foldersPath = path.join(__dirname, "interactions", "modals");
-  const modalsFolders = fs.readdirSync(foldersPath);
-
-  for (const file of modalsFolders) {
-    const filePath = path.join(foldersPath, file);
+  loadFiles(foldersPath, (filePath) => {
     const modal = require(filePath)(api);
-    if ("customId" in modal && "execute" in modal) {
+    if (modal.customId && modal.execute) {
       client.interactions.modals[modal.customId] = modal;
     } else {
       console.log(
@@ -97,17 +84,9 @@ try {
         })
       );
     }
-  }
-} catch (error) {
-  console.error(
-    i18n.translate(config.locale, "logs.modal.loading.error", {
-      logtype: i18n.translate(config.locale, "logs.error"),
-    }),
-    error
-  );
-}
+  });
+};
 
-// Startup
 client.once(Events.ClientReady, (readyClient) => {
   console.log("----------");
   console.log(
@@ -117,55 +96,34 @@ client.once(Events.ClientReady, (readyClient) => {
     })
   );
   console.log("----------");
-  client.user.setActivity(config.statusMessage, {
-    type: ActivityType.Playing,
-  });
+  client.user.setActivity(config.statusMessage, { type: ActivityType.Playing });
   setInterval(() => {
-    client.user.setActivity(config.statusMessage, {
-      type: ActivityType.Playing,
-    });
+    client.user.setActivity(config.statusMessage, { type: ActivityType.Playing });
   }, 360000);
 });
 
-// Interaction Handler
-
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (interaction.isChatInputCommand()) {
-    const command = interaction.client.commands.get(interaction.commandName);
-
-    if (!command) {
-      console.error(
-        `No command matching ${interaction.commandName} was found.`
-      );
-      return;
-    }
-
-    try {
+  try {
+    if (interaction.isChatInputCommand()) {
+      const command = interaction.client.commands.get(interaction.commandName);
+      if (!command) throw new Error(`No command matching ${interaction.commandName} was found.`);
       await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: "There was an error while executing this command!",
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content: "There was an error while executing this command!",
-          ephemeral: true,
-        });
-      }
+    } else if (interaction.isModalSubmit()) {
+      const modal = client.interactions.modals[interaction.customId];
+      if (!modal) throw new Error(`No modal matching ${interaction.customId} was found.`);
+      await modal.execute(interaction);
     }
-  } else if (interaction.isModalSubmit()) {
-    if (client.interactions.modals[interaction.customId]) {
-      client.interactions.modals[interaction.customId].execute(interaction);
-    } else {
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
-    }
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: "There was an error while executing this command!",
+      ephemeral: true,
+    });
   }
 });
 
+loadCommands();
+loadModals();
 client.login(config.token);
+
+module.exports = client;

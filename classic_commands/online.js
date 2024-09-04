@@ -1,68 +1,39 @@
-const Discord = require("discord.js")
-const config = require('../config.js')
-const client = require('../server.js')
-const crypto = require('crypto')
+const Discord = require("discord.js");
+const config = require('../config.js');
+const client = require('../server.js');
 const connection = require('../databasesql.js');
-const soap = require("../soap.js");
+
 module.exports = {
-	name: 'online',
-	description: 'Gives list of online players.',
-    DMonly: false,
-	execute(message, args) {
-    let counter = 0;
-    let onlinePlayers = 0;
-    connection.query('USE acore_characters')
-    connection.query('select name from characters where online = 1', (error, results1, fields) => {
+  name: 'online',
+  description: 'Gives list of online players.',
+  DMonly: false,
+  async execute(message, args) {
+    try {
+      await connection.query('USE acore_characters');
+      const [results1] = await connection.query('SELECT name FROM characters WHERE online = 1');
 
-      if(!results1) {
-        onlinePlayers = "There is no one online!"
+      let onlinePlayers;
+      let counter = 0;
 
-        const embed = new Discord.MessageEmbed()
-        .setColor(config.color)
-        .setTitle('Online Players')
-        .setDescription(onlinePlayers)
-        .setTimestamp()
-        .setFooter('Online command', client.user.displayAvatarURL());
-
-        return message.channel.send(embed);
-      
-      }
-
-      if (error) return console.log(error)
-
-      onlinePlayers = [];
-      results1.forEach(name => {
-        onlinePlayers.push(name.name)
-        counter++;
-      });
-
-      if (counter > 0 ) {
-    
-        console.log(onlinePlayers)
-        const embed = new Discord.MessageEmbed()
-        .setColor(config.color)
-        .setTitle('Online Players')
-        .setDescription(onlinePlayers)
-        .addField(`Amount of characters online:`, counter + ` characters`)
-        .setTimestamp()
-        .setFooter('Online command', client.user.displayAvatarURL());
-        
-        message.channel.send(embed);
+      if (!results1.length) {
+        onlinePlayers = "There is no one online!";
       } else {
-        onlinePlayers = 'There is no one online.'
-
-        const embed = new Discord.MessageEmbed()
-        .setColor(config.color)
-        .setTitle('Online Players')
-        .setDescription(onlinePlayers)
-        .addField(`Amount of characters online:`, counter + ` characters`)
-        .setTimestamp()
-        .setFooter('Online command', client.user.displayAvatarURL());
-        
-        message.channel.send(embed);
+        onlinePlayers = results1.map(player => player.name);
+        counter = onlinePlayers.length;
       }
 
-    
-})
-	},
+      const embed = new Discord.MessageEmbed()
+        .setColor(config.color)
+        .setTitle('Online Players')
+        .setDescription(Array.isArray(onlinePlayers) ? onlinePlayers.join(', ') : onlinePlayers)
+        .addField('Amount of characters online:', `${counter} characters`)
+        .setTimestamp()
+        .setFooter('Online command', client.user.displayAvatarURL());
+
+      message.channel.send(embed);
+    } catch (error) {
+      console.error(error);
+      message.reply('An error occurred while fetching the online players.');
+    }
+  },
 };
